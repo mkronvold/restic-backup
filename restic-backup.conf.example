@@ -1,0 +1,33 @@
+# restic-backup.conf - Configuration file for restic-backup.sh
+# Copy this file to restic-backup.conf and customize for your environment
+
+# Repository location
+# Local path example:
+RESTIC_REPOSITORY="/backup/restic-repo"
+
+# Remote repository examples:
+# RESTIC_REPOSITORY="sftp:user@host:/backup/restic-repo"
+# RESTIC_REPOSITORY="s3:s3.amazonaws.com/bucket-name"
+# RESTIC_REPOSITORY="b2:bucketname:path/to/repo"
+
+# Repository password
+# Option 1: Direct password (less secure)
+RESTIC_PASSWORD="change-me-to-a-secure-password"
+
+# Option 2: Password file (more secure)
+# RESTIC_PASSWORD_FILE="/home/user/.restic-password"
+# (Create file with: echo "your-password" > ~/.restic-password && chmod 600 ~/.restic-password)
+
+# Backup targets (colon-separated list of directories)
+BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/home/user/projects:/etc"
+
+# Optional: Additional restic options
+# RESTIC_COMPRESSION="auto"
+# RESTIC_CACHE_DIR="/var/cache/restic"
+
+# Optional: Retention policy (for pruning old snapshots)
+# KEEP_LAST=7
+# KEEP_DAILY=7
+# KEEP_WEEKLY=4
+# KEEP_MONTHLY=6
+# KEEP_YEARLY=2
