@@ -1,5 +1,6 @@
 # Configuration files with passwords
 restic-backup.conf
+.restic-password
 
 # Log files
 *.log

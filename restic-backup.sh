@@ -157,7 +157,13 @@ backup_all() {
     
     IFS=':' read -ra TARGETS <<< "$BACKUP_TARGETS"
     for target in "${TARGETS[@]}"; do
-        if backup_single "$target"; then
+        # Disable exit on error for individual backups
+        set +e
+        backup_single "$target"
+        local result=$?
+        set -e
+        
+        if [ $result -eq 0 ]; then
             ((success_count++))
         else
             ((failure_count++))
@@ -253,7 +259,13 @@ restore_all() {
             restore_path="$restore_base"
         fi
         
-        if restore_latest "$target_name" "$restore_path"; then
+        # Disable exit on error for individual restores
+        set +e
+        restore_latest "$target_name" "$restore_path"
+        local result=$?
+        set -e
+        
+        if [ $result -eq 0 ]; then
             ((success_count++))
         else
             ((failure_count++))
