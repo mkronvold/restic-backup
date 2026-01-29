@@ -164,9 +164,9 @@ backup_all() {
         set -e
         
         if [ $result -eq 0 ]; then
-            ((success_count++))
+            success_count=$((success_count + 1))
         else
-            ((failure_count++))
+            failure_count=$((failure_count + 1))
         fi
     done
     
@@ -266,9 +266,9 @@ restore_all() {
         set -e
         
         if [ $result -eq 0 ]; then
-            ((success_count++))
+            success_count=$((success_count + 1))
         else
-            ((failure_count++))
+            failure_count=$((failure_count + 1))
         fi
     done
     
