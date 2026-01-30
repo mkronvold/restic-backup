@@ -57,13 +57,56 @@ rotate_logs() {
     fi
 }
 
+# Color codes for terminal output
+if [ -t 1 ]; then
+    # Terminal supports colors
+    COLOR_RESET='\033[0m'
+    COLOR_RED='\033[0;31m'
+    COLOR_GREEN='\033[0;32m'
+    COLOR_YELLOW='\033[0;33m'
+    COLOR_BLUE='\033[0;34m'
+    COLOR_CYAN='\033[0;36m'
+else
+    # No color support
+    COLOR_RESET=''
+    COLOR_RED=''
+    COLOR_GREEN=''
+    COLOR_YELLOW=''
+    COLOR_BLUE=''
+    COLOR_CYAN=''
+fi
+
 # Logging function
 log() {
     local level="$1"
     shift
     local message="$*"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
+    local log_line="[$timestamp] [$level] $message"
+    
+    # Color code for terminal output
+    local color=""
+    case "$level" in
+        SUCCESS)
+            color="${COLOR_GREEN}"
+            ;;
+        FAILURE)
+            color="${COLOR_RED}"
+            ;;
+        INFO)
+            if [[ "$message" == ATTEMPT:* ]]; then
+                color="${COLOR_CYAN}"
+            elif [[ "$message" == SIZE:* ]]; then
+                color="${COLOR_YELLOW}"
+            else
+                color="${COLOR_BLUE}"
+            fi
+            ;;
+    esac
+    
+    # Print to terminal with color, log to file without color
+    echo -e "${color}${log_line}${COLOR_RESET}"
+    echo "$log_line" >> "$LOG_FILE"
 }
 
 log_attempt() {

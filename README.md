@@ -8,7 +8,9 @@ A comprehensive bash script for managing restic backups with multiple directorie
 - ✅ **Multiple backup targets** - Backup multiple directories with one command
 - ✅ **Selective operations** - Backup/restore individual targets or all at once
 - ✅ **Flexible restore** - Restore to original or alternative locations
-- ✅ **Comprehensive logging** - Tracks attempts, success/failure, and size metrics
+- ✅ **Comprehensive logging** - Color-coded terminal output with detailed tracking
+- ✅ **Automatic retention** - Built-in snapshot pruning with configurable policies
+- ✅ **Log rotation** - Automatic log file management (10MB limit, keep last 10)
 - ✅ **Error handling** - Automatic cleanup of temporary files
 - ✅ **Dependency checking** - Validates restic installation and configuration
 - ✅ **Repository support** - Works with local, SFTP, S3, B2, and other backends
@@ -181,6 +183,12 @@ All operations are logged to `~/.restic/restic-backup.log` (default) with:
 - Timestamp for each operation
 - Attempt/success/failure status
 - Size metrics (files processed, data added)
+- **Color-coded terminal output** (when output is to terminal):
+  - `SUCCESS` - Green
+  - `FAILURE` - Red
+  - `ATTEMPT` - Cyan
+  - `SIZE` - Yellow
+  - Other `INFO` - Blue
 
 **Log Rotation:**
 - Logs automatically rotate when exceeding 10MB
