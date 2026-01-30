@@ -33,6 +33,30 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
+# Log rotation - keep last 10 log files
+rotate_logs() {
+    local max_logs=10
+    local log_size_limit=$((10 * 1024 * 1024))  # 10MB
+    
+    # Check if log file exists and exceeds size limit
+    if [ -f "$LOG_FILE" ] && [ $(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null || echo 0) -gt $log_size_limit ]; then
+        # Rotate existing logs
+        for i in $(seq $((max_logs - 1)) -1 1); do
+            if [ -f "${LOG_FILE}.$i" ]; then
+                mv "${LOG_FILE}.$i" "${LOG_FILE}.$((i + 1))"
+            fi
+        done
+        
+        # Rotate current log
+        mv "$LOG_FILE" "${LOG_FILE}.1"
+        
+        # Remove oldest log if exceeds max_logs
+        if [ -f "${LOG_FILE}.$((max_logs + 1))" ]; then
+            rm -f "${LOG_FILE}.$((max_logs + 1))"
+        fi
+    fi
+}
+
 # Logging function
 log() {
     local level="$1"
@@ -349,6 +373,12 @@ LOGGING:
     Default log location: ~/.restic/restic-backup.log
     All operations are logged to the log file with timestamps.
     Log entries include attempt status, success/failure, and size information.
+    
+    Log Rotation:
+    - Logs are automatically rotated when they exceed 10MB
+    - Keeps last 10 rotated logs (*.log.1 through *.log.10)
+    - Oldest logs are automatically removed
+
 For more information, visit: https://restic.readthedocs.io/
 
 EOF
@@ -385,6 +415,9 @@ main() {
     
     local command="$1"
     shift
+    
+    # Rotate logs before starting operations
+    rotate_logs
     
     # Initialize
     check_dependencies

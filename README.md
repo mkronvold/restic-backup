@@ -148,10 +148,15 @@ See [SETUP.md](SETUP.md) for detailed setup instructions for each backend.
 
 ## Logging
 
-All operations are logged to `restic-backup.log` (default) with:
+All operations are logged to `~/.restic/restic-backup.log` (default) with:
 - Timestamp for each operation
 - Attempt/success/failure status
 - Size metrics (files processed, data added)
+
+**Log Rotation:**
+- Logs automatically rotate when exceeding 10MB
+- Keeps last 10 rotated logs (`.log.1` through `.log.10`)
+- Oldest logs are removed automatically
 
 Example log output:
 ```
