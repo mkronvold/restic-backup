@@ -183,12 +183,11 @@ All operations are logged to `~/.restic/restic-backup.log` (default) with:
 - Timestamp for each operation
 - Attempt/success/failure status
 - Size metrics (files processed, data added)
-- **Color-coded terminal output** (when output is to terminal):
-  - `SUCCESS` - Green
-  - `FAILURE` - Red
-  - `ATTEMPT` - Cyan
-  - `SIZE` - Yellow
-  - Other `INFO` - Blue
+- **Color-coded level tags** (terminal output only):
+  - `[SUCCESS]` - Green
+  - `[FAILURE]` - Red
+  - `[INFO]` (ATTEMPT) - Cyan
+  - `[INFO]` (SIZE) - Yellow
 
 **Log Rotation:**
 - Logs automatically rotate when exceeding 10MB

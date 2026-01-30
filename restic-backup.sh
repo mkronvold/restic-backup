@@ -82,31 +82,35 @@ log() {
     shift
     local message="$*"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    local log_line="[$timestamp] [$level] $message"
     
-    # Color code for terminal output
-    local color=""
+    # Color code for terminal output (only the level tag)
+    local colored_level=""
     case "$level" in
         SUCCESS)
-            color="${COLOR_GREEN}"
+            colored_level="${COLOR_GREEN}[${level}]${COLOR_RESET}"
             ;;
         FAILURE)
-            color="${COLOR_RED}"
+            colored_level="${COLOR_RED}[${level}]${COLOR_RESET}"
             ;;
         INFO)
             if [[ "$message" == ATTEMPT:* ]]; then
-                color="${COLOR_CYAN}"
+                colored_level="${COLOR_CYAN}[${level}]${COLOR_RESET}"
             elif [[ "$message" == SIZE:* ]]; then
-                color="${COLOR_YELLOW}"
+                colored_level="${COLOR_YELLOW}[${level}]${COLOR_RESET}"
             else
-                color="${COLOR_BLUE}"
+                colored_level="[${level}]"
             fi
+            ;;
+        *)
+            colored_level="[${level}]"
             ;;
     esac
     
-    # Print to terminal with color, log to file without color
-    echo -e "${color}${log_line}${COLOR_RESET}"
-    echo "$log_line" >> "$LOG_FILE"
+    # Print to terminal with colored level tag
+    echo -e "[$timestamp] ${colored_level} $message"
+    
+    # Log to file without color
+    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
 }
 
 log_attempt() {
