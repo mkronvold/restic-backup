@@ -69,6 +69,7 @@ A comprehensive bash script for managing restic backups with multiple directorie
 | `restore <snapshot> [path]` | Restore a specific snapshot to optional path |
 | `restore-latest <tag> [path]` | Restore latest snapshot for tag to optional path |
 | `restore-all [path]` | Restore all targets to optional base path |
+| `prune` | Manually apply retention policy and prune old snapshots |
 | `check` | Check repository integrity |
 
 ### Options
@@ -108,6 +109,9 @@ A comprehensive bash script for managing restic backups with multiple directorie
 
 # Check repository integrity
 ./restic-backup.sh check
+
+# Manually prune old snapshots
+./restic-backup.sh prune
 ```
 
 ## Configuration
@@ -129,6 +133,27 @@ RESTIC_PASSWORD_FILE="~/.restic/.restic-password"
 
 # Colon-separated list of directories to backup
 BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/etc"
+
+# Retention policy (automatic cleanup after backup)
+KEEP_LAST=7        # Keep last 7 snapshots
+KEEP_DAILY=14      # Keep 1 snapshot per day for 14 days
+KEEP_WEEKLY=8      # Keep 1 snapshot per week for 8 weeks
+KEEP_MONTHLY=12    # Keep 1 snapshot per month for 12 months
+KEEP_YEARLY=3      # Keep 1 snapshot per year for 3 years
+```
+
+### Automatic Snapshot Pruning
+
+By default, the script **automatically prunes old snapshots** after each `backup all` operation based on your retention policy. This means you don't need a separate cron job for cleanup.
+
+**To disable automatic pruning:**
+```bash
+AUTO_PRUNE=false
+```
+
+**To manually prune:**
+```bash
+./restic-backup.sh prune
 ```
 
 Logs are written to `~/.restic/restic-backup.log` by default.

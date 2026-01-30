@@ -205,10 +205,62 @@ backup_all() {
     
     log "INFO" "Backup summary: $success_count successful, $failure_count failed"
     
+    # Run automatic retention cleanup if enabled
+    if [ "${AUTO_PRUNE:-true}" = "true" ]; then
+        prune_snapshots
+    fi
+    
     if [ $failure_count -gt 0 ]; then
         return 1
     fi
     return 0
+}
+
+# Prune old snapshots based on retention policy
+prune_snapshots() {
+    log_attempt "Applying retention policy and pruning old snapshots"
+    
+    local prune_args=()
+    
+    # Build prune arguments from config
+    if [ -n "${KEEP_LAST:-}" ] && [ "${KEEP_LAST}" -gt 0 ]; then
+        prune_args+=(--keep-last "${KEEP_LAST}")
+    fi
+    
+    if [ -n "${KEEP_HOURLY:-}" ] && [ "${KEEP_HOURLY}" -gt 0 ]; then
+        prune_args+=(--keep-hourly "${KEEP_HOURLY}")
+    fi
+    
+    if [ -n "${KEEP_DAILY:-}" ] && [ "${KEEP_DAILY}" -gt 0 ]; then
+        prune_args+=(--keep-daily "${KEEP_DAILY}")
+    fi
+    
+    if [ -n "${KEEP_WEEKLY:-}" ] && [ "${KEEP_WEEKLY}" -gt 0 ]; then
+        prune_args+=(--keep-weekly "${KEEP_WEEKLY}")
+    fi
+    
+    if [ -n "${KEEP_MONTHLY:-}" ] && [ "${KEEP_MONTHLY}" -gt 0 ]; then
+        prune_args+=(--keep-monthly "${KEEP_MONTHLY}")
+    fi
+    
+    if [ -n "${KEEP_YEARLY:-}" ] && [ "${KEEP_YEARLY}" -gt 0 ]; then
+        prune_args+=(--keep-yearly "${KEEP_YEARLY}")
+    fi
+    
+    # If no retention policy defined, skip pruning
+    if [ ${#prune_args[@]} -eq 0 ]; then
+        log "INFO" "No retention policy defined, skipping prune"
+        return 0
+    fi
+    
+    # Run forget and prune
+    if restic forget "${prune_args[@]}" --prune 2>&1 | tee -a "$LOG_FILE" | tail -1 > /dev/null; then
+        log_success "Retention policy applied and old snapshots pruned"
+        return 0
+    else
+        log_failure "Failed to prune snapshots"
+        return 1
+    fi
 }
 
 # List snapshots
@@ -326,6 +378,7 @@ COMMANDS:
     restore <snapshot> [path]    Restore a specific snapshot to optional path
     restore-latest <tag> [path]  Restore latest snapshot for tag to optional path
     restore-all [path]           Restore all targets to optional base path
+    prune                        Manually apply retention policy and prune snapshots
     check                        Check repository integrity
 
 OPTIONS:
@@ -361,6 +414,15 @@ CONFIGURATION FILE FORMAT:
     RESTIC_PASSWORD_FILE    Path to file containing repository password
     BACKUP_TARGETS          Colon-separated list of directories to backup
     
+    Optional retention policy (for automatic pruning):
+    AUTO_PRUNE              Enable/disable automatic pruning after backup (default: true)
+    KEEP_LAST               Keep last N snapshots
+    KEEP_HOURLY             Keep last N hourly snapshots
+    KEEP_DAILY              Keep last N daily snapshots
+    KEEP_WEEKLY             Keep last N weekly snapshots
+    KEEP_MONTHLY            Keep last N monthly snapshots
+    KEEP_YEARLY             Keep last N yearly snapshots
+    
     Default location: ~/.restic/restic-backup.conf
     Fallback: ./restic-backup.conf
     
@@ -368,6 +430,13 @@ Example config file:
     RESTIC_REPOSITORY="/backup/restic-repo"
     RESTIC_PASSWORD="my-secure-password"
     BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/etc"
+    
+    # Retention policy
+    KEEP_LAST=7
+    KEEP_DAILY=14
+    KEEP_WEEKLY=8
+    KEEP_MONTHLY=12
+    KEEP_YEARLY=3
 
 LOGGING:
     Default log location: ~/.restic/restic-backup.log
@@ -467,6 +536,10 @@ main() {
             
         restore-all)
             restore_all "${1:-/}"
+            ;;
+            
+        prune)
+            prune_snapshots
             ;;
             
         check)

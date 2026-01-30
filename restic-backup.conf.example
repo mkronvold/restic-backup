@@ -25,9 +25,19 @@ BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/home/user/projects:/et
 # RESTIC_COMPRESSION="auto"
 # RESTIC_CACHE_DIR="/var/cache/restic"
 
-# Optional: Retention policy (for pruning old snapshots)
+# Optional: Retention policy (for automatic pruning after backup)
+# Uncomment and set values to enable automatic cleanup of old snapshots
+# AUTO_PRUNE=true           # Set to false to disable automatic pruning (default: true)
+# KEEP_LAST=7               # Keep last N snapshots
+# KEEP_HOURLY=24            # Keep last N hourly snapshots
+# KEEP_DAILY=7              # Keep last N daily snapshots
+# KEEP_WEEKLY=4             # Keep last N weekly snapshots
+# KEEP_MONTHLY=6            # Keep last N monthly snapshots
+# KEEP_YEARLY=2             # Keep last N yearly snapshots
+#
+# Example: Keep last 7 snapshots, plus 1 daily for 14 days, 1 weekly for 8 weeks
 # KEEP_LAST=7
-# KEEP_DAILY=7
-# KEEP_WEEKLY=4
-# KEEP_MONTHLY=6
-# KEEP_YEARLY=2
+# KEEP_DAILY=14
+# KEEP_WEEKLY=8
+# KEEP_MONTHLY=12
+# KEEP_YEARLY=3
