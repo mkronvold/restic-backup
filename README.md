@@ -71,6 +71,7 @@ A comprehensive bash script for managing restic backups with multiple directorie
 | `restore-all [path]` | Restore all targets to optional base path |
 | `prune` | Manually apply retention policy and prune old snapshots |
 | `check` | Check repository integrity |
+| `config` | Show current configuration (with masked password) |
 
 ### Options
 
@@ -112,6 +113,9 @@ A comprehensive bash script for managing restic backups with multiple directorie
 
 # Manually prune old snapshots
 ./restic-backup.sh prune
+
+# Show current configuration
+./restic-backup.sh config
 ```
 
 ## Configuration

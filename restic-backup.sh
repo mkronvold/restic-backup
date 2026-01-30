@@ -276,6 +276,61 @@ list_snapshots() {
     fi
 }
 
+# Show current configuration (with masked password)
+show_config() {
+    echo "=== Current Configuration ==="
+    echo ""
+    echo "Config file: $CONFIG_FILE"
+    echo "Log file: $LOG_FILE"
+    echo ""
+    echo "Repository:"
+    echo "  RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-<not set>}"
+    
+    if [ -n "${RESTIC_PASSWORD:-}" ]; then
+        echo "  RESTIC_PASSWORD: ********"
+    fi
+    
+    if [ -n "${RESTIC_PASSWORD_FILE:-}" ]; then
+        echo "  RESTIC_PASSWORD_FILE: ${RESTIC_PASSWORD_FILE}"
+        if [ -f "${RESTIC_PASSWORD_FILE}" ]; then
+            echo "    (file exists, password: ********)"
+        else
+            echo "    (file not found!)"
+        fi
+    fi
+    
+    echo ""
+    echo "Backup Targets:"
+    if [ -n "${BACKUP_TARGETS:-}" ]; then
+        IFS=':' read -ra TARGETS <<< "$BACKUP_TARGETS"
+        for target in "${TARGETS[@]}"; do
+            if [ -d "$target" ]; then
+                echo "  ✓ $target"
+            else
+                echo "  ✗ $target (not found)"
+            fi
+        done
+    else
+        echo "  <not set>"
+    fi
+    
+    echo ""
+    echo "Retention Policy:"
+    echo "  AUTO_PRUNE: ${AUTO_PRUNE:-true}"
+    echo "  KEEP_LAST: ${KEEP_LAST:-<not set>}"
+    echo "  KEEP_HOURLY: ${KEEP_HOURLY:-<not set>}"
+    echo "  KEEP_DAILY: ${KEEP_DAILY:-<not set>}"
+    echo "  KEEP_WEEKLY: ${KEEP_WEEKLY:-<not set>}"
+    echo "  KEEP_MONTHLY: ${KEEP_MONTHLY:-<not set>}"
+    echo "  KEEP_YEARLY: ${KEEP_YEARLY:-<not set>}"
+    
+    if [ -z "${KEEP_LAST:-}${KEEP_HOURLY:-}${KEEP_DAILY:-}${KEEP_WEEKLY:-}${KEEP_MONTHLY:-}${KEEP_YEARLY:-}" ]; then
+        echo "  (No retention policy configured - old snapshots will not be pruned)"
+    fi
+    
+    echo ""
+}
+
 # Restore a single snapshot
 restore_snapshot() {
     local snapshot_id="$1"
@@ -380,6 +435,7 @@ COMMANDS:
     restore-all [path]           Restore all targets to optional base path
     prune                        Manually apply retention policy and prune snapshots
     check                        Check repository integrity
+    config                       Show current configuration (with masked password)
 
 OPTIONS:
     -c, --config FILE            Use specified config file (default: ~/.restic/restic-backup.conf)
@@ -488,7 +544,15 @@ main() {
     # Rotate logs before starting operations
     rotate_logs
     
-    # Initialize
+    # Config command doesn't need repository access
+    if [ "$command" = "config" ]; then
+        check_dependencies
+        load_config
+        show_config
+        return 0
+    fi
+    
+    # Initialize for all other commands
     check_dependencies
     load_config
     check_repository
