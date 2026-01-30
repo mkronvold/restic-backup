@@ -7,8 +7,17 @@ set -euo pipefail
 
 # Global variables
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="${CONFIG_FILE:-$SCRIPT_DIR/restic-backup.conf}"
-LOG_FILE="${LOG_FILE:-$SCRIPT_DIR/restic-backup.log}"
+
+# Config file search order: 1) ~/.restic/restic-backup.conf 2) ./restic-backup.conf
+if [ -z "${CONFIG_FILE:-}" ]; then
+    if [ -f "$HOME/.restic/restic-backup.conf" ]; then
+        CONFIG_FILE="$HOME/.restic/restic-backup.conf"
+    else
+        CONFIG_FILE="$SCRIPT_DIR/restic-backup.conf"
+    fi
+fi
+
+LOG_FILE="${LOG_FILE:-$HOME/.restic/restic-backup.log}"
 TEMP_FILES=()
 
 # Cleanup function for temporary files
@@ -296,8 +305,8 @@ COMMANDS:
     check                        Check repository integrity
 
 OPTIONS:
-    -c, --config FILE            Use specified config file (default: ./restic-backup.conf)
-    -l, --log FILE               Use specified log file (default: ./restic-backup.log)
+    -c, --config FILE            Use specified config file (default: ~/.restic/restic-backup.conf)
+    -l, --log FILE               Use specified log file (default: ~/.restic/restic-backup.log)
     -h, --help                   Show detailed help
     
 ENVIRONMENT:
@@ -328,15 +337,18 @@ CONFIGURATION FILE FORMAT:
     RESTIC_PASSWORD_FILE    Path to file containing repository password
     BACKUP_TARGETS          Colon-separated list of directories to backup
     
+    Default location: ~/.restic/restic-backup.conf
+    Fallback: ./restic-backup.conf
+    
 Example config file:
     RESTIC_REPOSITORY="/backup/restic-repo"
     RESTIC_PASSWORD="my-secure-password"
     BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/etc"
 
 LOGGING:
+    Default log location: ~/.restic/restic-backup.log
     All operations are logged to the log file with timestamps.
     Log entries include attempt status, success/failure, and size information.
-
 For more information, visit: https://restic.readthedocs.io/
 
 EOF

@@ -28,9 +28,13 @@ A comprehensive bash script for managing restic backups with multiple directorie
 
 3. **Configure your backup**:
    ```bash
-   cp restic-backup.conf.example restic-backup.conf
-   chmod 600 restic-backup.conf
-   nano restic-backup.conf
+   # Create config directory
+   mkdir -p ~/.restic
+   
+   # Copy example config
+   cp restic-backup.conf.example ~/.restic/restic-backup.conf
+   chmod 600 ~/.restic/restic-backup.conf
+   nano ~/.restic/restic-backup.conf
    ```
 
 4. **Initialize your restic repository** (first time only):
@@ -108,19 +112,26 @@ A comprehensive bash script for managing restic backups with multiple directorie
 
 ## Configuration
 
-The configuration file (`restic-backup.conf`) uses bash syntax:
+The script searches for configuration in this order:
+1. `~/.restic/restic-backup.conf` (recommended)
+2. `./restic-backup.conf` (fallback)
+3. Path specified with `-c` option (override)
+
+The configuration file uses bash syntax:
 
 ```bash
 # Repository location (local, sftp, s3, b2, etc.)
 RESTIC_REPOSITORY="/backup/restic-repo"
 
 # Password (use file for better security)
-RESTIC_PASSWORD_FILE="/home/user/.restic-password"
+RESTIC_PASSWORD_FILE="~/.restic/.restic-password"
 # Or: RESTIC_PASSWORD="your-password"
 
 # Colon-separated list of directories to backup
 BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/etc"
 ```
+
+Logs are written to `~/.restic/restic-backup.log` by default.
 
 ### Supported Repository Types
 
@@ -160,7 +171,12 @@ crontab -e
 
 Add for daily backups at 2 AM:
 ```
-0 2 * * * /path/to/restic-backup/restic-backup.sh backup all
+0 2 * * * /path/to/restic-backup.sh backup all
+```
+
+Or if the script is in your PATH:
+```
+0 2 * * * restic-backup.sh backup all
 ```
 
 ### Using systemd
@@ -187,7 +203,8 @@ See [SETUP.md](SETUP.md#remote-repository-setup-examples) for details.
 
 - **Never commit your config file with passwords to git**
 - Use `RESTIC_PASSWORD_FILE` instead of `RESTIC_PASSWORD`
-- Set restrictive permissions: `chmod 600 restic-backup.conf`
+- Set restrictive permissions: `chmod 600 ~/.restic/restic-backup.conf`
+- Store config in `~/.restic/` directory (not tracked by git)
 - Use strong, randomly generated passwords
 - **Important**: Lost passwords = lost backups (no recovery possible)
 
