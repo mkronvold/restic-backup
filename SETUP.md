@@ -60,7 +60,23 @@ REPO_PATH="b2:bucket-name:path/to/repo"
 - REST Server: `rest:http://hostname:8000/`
 - rclone: `rclone:remote:path`
 
-## Step 3: Initialize Repository
+## Step 3: Create Configuration Directories
+
+Set up secure directories for configuration and secrets:
+
+```bash
+# Create .restic directory for config files
+mkdir -p ~/.restic
+chmod 700 ~/.restic
+
+# Create .secrets directory for password file
+mkdir -p ~/.secrets
+chmod 700 ~/.secrets
+```
+
+These restrictive permissions ensure only you can access the configuration and password files.
+
+## Step 4: Initialize Repository
 
 Create a strong password for your repository:
 
@@ -68,9 +84,9 @@ Create a strong password for your repository:
 # Generate a secure password
 openssl rand -base64 32
 
-# Save it securely
-echo "your-generated-password" > ~/.restic-password
-chmod 600 ~/.restic-password
+# Save it securely in .secrets directory
+echo "your-generated-password" > ~/.secrets/restic-password
+chmod 600 ~/.secrets/restic-password
 ```
 
 Initialize the repository:
@@ -78,7 +94,7 @@ Initialize the repository:
 ```bash
 # For local repository
 export RESTIC_REPOSITORY="/backup/restic-repo"
-export RESTIC_PASSWORD_FILE="$HOME/.restic-password"
+export RESTIC_PASSWORD_FILE="$HOME/.secrets/restic-password"
 
 # Create directory if local
 mkdir -p "$RESTIC_REPOSITORY"
@@ -94,20 +110,20 @@ Please note that knowledge of your password is required to access the repository
 Losing your password means that your data is irrecoverably lost.
 ```
 
-## Step 4: Configure the Backup Script
+## Step 5: Configure the Backup Script
 
-Copy the example configuration:
+Copy the example configuration to your .restic directory:
 
 ```bash
-cd /home/mkronvold/src/restic-backup
-cp restic-backup.conf.example restic-backup.conf
-chmod 600 restic-backup.conf  # Protect password
+cd /path/to/restic-backup
+cp restic-backup.conf.example ~/.restic/restic-backup.conf
+chmod 600 ~/.restic/restic-backup.conf
 ```
 
-Edit `restic-backup.conf`:
+Edit the configuration:
 
 ```bash
-nano restic-backup.conf
+nano ~/.restic/restic-backup.conf
 ```
 
 Update these settings:
@@ -116,18 +132,25 @@ Update these settings:
 # Set your repository location
 RESTIC_REPOSITORY="/backup/restic-repo"
 
-# Option 1: Use password file (recommended)
-RESTIC_PASSWORD_FILE="/home/user/.restic-password"
-# Comment out RESTIC_PASSWORD if using password file
-
-# Option 2: Use direct password (less secure)
-# RESTIC_PASSWORD="your-secure-password"
+# Use password file from .secrets directory (recommended)
+RESTIC_PASSWORD_FILE="$HOME/.secrets/restic-password"
 
 # Define directories to backup (colon-separated)
 BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/home/user/projects"
+
+# Optional: Set retention policy for automatic pruning
+KEEP_DAILY=7
+KEEP_WEEKLY=4
+KEEP_MONTHLY=6
+KEEP_YEARLY=2
 ```
 
-## Step 5: Test Your Setup
+## Step 6: Test Your Setup
+
+Verify your configuration:
+```bash
+./restic-backup.sh config
+```
 
 Check repository access:
 ```bash
@@ -144,7 +167,7 @@ List snapshots:
 ./restic-backup.sh list
 ```
 
-## Step 6: Automate Backups (Optional)
+## Step 7: Automate Backups (Optional)
 
 ### Using cron
 

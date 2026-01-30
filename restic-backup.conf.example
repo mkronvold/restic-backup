@@ -11,12 +11,14 @@ RESTIC_REPOSITORY="/backup/restic-repo"
 # RESTIC_REPOSITORY="b2:bucketname:path/to/repo"
 
 # Repository password
-# Option 1: Direct password (less secure)
-RESTIC_PASSWORD="change-me-to-a-secure-password"
+# Option 1: Password file (recommended - most secure)
+# Store in ~/.secrets directory with restricted permissions
+RESTIC_PASSWORD_FILE="$HOME/.secrets/restic-password"
+# (Create: mkdir -p ~/.secrets && chmod 700 ~/.secrets)
+# (Then: echo "your-password" > ~/.secrets/restic-password && chmod 600 ~/.secrets/restic-password)
 
-# Option 2: Password file (more secure)
-# RESTIC_PASSWORD_FILE="/home/user/.restic-password"
-# (Create file with: echo "your-password" > ~/.restic-password && chmod 600 ~/.restic-password)
+# Option 2: Direct password (less secure - avoid for production)
+# RESTIC_PASSWORD="change-me-to-a-secure-password"
 
 # Backup targets (colon-separated list of directories)
 BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/home/user/projects:/etc"

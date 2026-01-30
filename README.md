@@ -28,8 +28,9 @@ A comprehensive bash script for managing restic backups with multiple directorie
 
 3. **Configure your backup**:
    ```bash
-   # Create config directory
-   mkdir -p ~/.restic
+   # Create directories with secure permissions
+   mkdir -p ~/.restic ~/.secrets
+   chmod 700 ~/.restic ~/.secrets
    
    # Copy example config
    cp restic-backup.conf.example ~/.restic/restic-backup.conf
@@ -39,13 +40,13 @@ A comprehensive bash script for managing restic backups with multiple directorie
 
 4. **Initialize your restic repository** (first time only):
    ```bash
-   # Create password file
-   echo "your-secure-password" > ~/.restic-password
-   chmod 600 ~/.restic-password
+   # Create password file in .secrets directory
+   echo "your-secure-password" > ~/.secrets/restic-password
+   chmod 600 ~/.secrets/restic-password
    
    # Initialize repository
    export RESTIC_REPOSITORY="/backup/restic-repo"
-   export RESTIC_PASSWORD_FILE="$HOME/.restic-password"
+   export RESTIC_PASSWORD_FILE="$HOME/.secrets/restic-password"
    restic init
    ```
 
@@ -131,9 +132,8 @@ The configuration file uses bash syntax:
 # Repository location (local, sftp, s3, b2, etc.)
 RESTIC_REPOSITORY="/backup/restic-repo"
 
-# Password (use file for better security)
-RESTIC_PASSWORD_FILE="~/.restic/.restic-password"
-# Or: RESTIC_PASSWORD="your-password"
+# Password file (recommended - stored in ~/.secrets/)
+RESTIC_PASSWORD_FILE="$HOME/.secrets/restic-password"
 
 # Colon-separated list of directories to backup
 BACKUP_TARGETS="/home/user/documents:/home/user/pictures:/etc"
@@ -237,8 +237,9 @@ See [SETUP.md](SETUP.md#remote-repository-setup-examples) for details.
 
 - **Never commit your config file with passwords to git**
 - Use `RESTIC_PASSWORD_FILE` instead of `RESTIC_PASSWORD`
-- Set restrictive permissions: `chmod 600 ~/.restic/restic-backup.conf`
-- Store config in `~/.restic/` directory (not tracked by git)
+- Store password in `~/.secrets/` with `chmod 700` on directory
+- Set restrictive permissions: `chmod 600 ~/.secrets/restic-password`
+- Set config permissions: `chmod 600 ~/.restic/restic-backup.conf`
 - Use strong, randomly generated passwords
 - **Important**: Lost passwords = lost backups (no recovery possible)
 
